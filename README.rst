@@ -97,9 +97,10 @@ Example usage::
 	}
 
 There are several different possible behaviors of HTTP purging which can be
-controlled with the X-Purge HTTP header.  This config will be smart and
-attempt to automatically pick the best method based on the URL if you don't
-use an X-Purge header.  See the comments in `lib/purge.vcl` for details.
+controlled with the X-Purge-Method HTTP header.  This config will be smart
+and attempt to automatically pick the best method based on the URL if you
+don't use an X-Purge-Method header.  See the comments in `lib/purge.vcl` for
+details.
 
 
 Static File Caching
