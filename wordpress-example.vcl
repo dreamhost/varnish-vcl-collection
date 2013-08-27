@@ -24,6 +24,8 @@ acl purge {
 # include "lib/mobile_pass.vcl";
 
 ### WordPress-specific config ###
+# This config was initially derived from the work of Donncha Ó Caoimh:
+# http://ocaoimh.ie/2011/08/09/speed-up-wordpress-with-apache-and-varnish/
 sub vcl_recv {
 	# pipe on weird http methods
 	if (req.request !~ "^GET|HEAD|PUT|POST|TRACE|OPTIONS|DELETE$") {
