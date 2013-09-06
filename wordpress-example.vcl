@@ -3,9 +3,13 @@ backend default {
 	.port = "8080";
 }
 
+import std;
+
 include "lib/xforward.vcl";
 include "lib/cloudflare.vcl";
 include "lib/purge.vcl";
+include "lib/bigfiles.vcl";        # Varnish 3.0.3+
+#include "lib/bigfiles_pipe.vcl";  # Varnish 3.0.2
 include "lib/static.vcl";
 
 acl cloudflare {

@@ -113,3 +113,33 @@ cookies for these requests.  This will also cache static files for 24 hours.
 The cache behavior for this vcl can be bypassed by adding `nocache` to the
 url.  For example, `http://example.com/foo.jpg?nocache` will always
 retrieve the file from the backend instead of serving from the cache.
+
+
+Big Files
+=========
+
+Varnish cannot cache files larger than the entire cache.  Additionally, a few
+large files could potentially fill up the cache and force many more small
+files to be removed from the cache. Use `lib/bigfiles.vcl` or
+`lib/bigfiles_pipe.vcl` to prevent caching files larger than 10 MB.  This
+size was chosen because this should allow most common website assets to be
+cached.  Files larger than 10 MB such as videos, long podcasts, or binary
+downloads are better suited to be served with a CDN or some server separate
+from your main web application.  This config will still allow Varnish to
+serve these large files, but the files will always be retrieved from the
+backend.
+
+`lib/bigfiles.vcl` marks files with `hit_for_pass` when they are above the
+size threshold.  However this only works in Varnish 3.0.3 or later.  Earlier
+versions of Varnish will instead show an internal server error when this
+method is used.  In the case of these older versions of Varnish, you should
+use `lib/bigfiles_pipe.vcl`, which instead pipes the request.
+
+Your main VCL must have `import std;`.  This import line is not included
+within the files themselves because having an import multiple times in a
+Varnish config (counting all included files) produces a compile error.
+
+Example usage::
+
+	import std;
+	include "lib/bigfiles.vcl";
