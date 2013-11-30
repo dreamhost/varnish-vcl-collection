@@ -12,10 +12,10 @@ include "lib/bigfiles.vcl";        # Varnish 3.0.3+
 #include "lib/bigfiles_pipe.vcl";  # Varnish 3.0.2
 include "lib/static.vcl";
 
-acl cloudflare {
+#acl cloudflare {
 	# set this ip to your Railgun IP (if applicable)
 	# "1.2.3.4";
-}
+#}
 
 acl purge {
 	"localhost";
