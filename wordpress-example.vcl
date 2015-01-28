@@ -53,6 +53,10 @@ sub vcl_recv {
 	if (req.url ~ "nocache|wp-admin|wp-(comments-post|login|activate|mail)\.php|bb-admin|server-status|control\.php|bb-login\.php|bb-reset-password\.php|register\.php") {
 		return(pass);
 	}
+	# don't cache timthumb
+	if (req.url ~ "timthumb.php") {
+             return(pass);
+        }
 
 	### looks like we might actually cache it!
 	# fix up the request
