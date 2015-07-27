@@ -64,6 +64,8 @@ sub vcl_recv {
 	# Remove has_js, Google Analytics __*, and wooTracker cookies.
 	set req.http.Cookie = regsuball(req.http.Cookie, "(^|;\s*)(__[a-z]+|has_js|wooTracker)=[^;]*", "");
 	set req.http.Cookie = regsub(req.http.Cookie, "^;\s*", "");
+
+	# Remove empty/whitespace cookies
 	if (req.http.Cookie ~ "^\s*$") {
 		unset req.http.Cookie;
 	}
