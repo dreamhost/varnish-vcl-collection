@@ -16,19 +16,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 sub vcl_recv {
-	if (req.request ~ "^(GET|HEAD)$" && req.url ~ "\.(jpg|jpeg|gif|png|ico|css|zip|tgz|gz|rar|bz2|pdf|txt|tar|wav|bmp|rtf|js|flv|swf|html|htm)(\?.*)?$") {
+	if (req.method ~ "^(GET|HEAD)$" && req.url ~ "\.(jpg|jpeg|gif|png|ico|css|zip|tgz|gz|rar|bz2|pdf|txt|tar|wav|bmp|rtf|js|flv|swf|html|htm|eot|svg|ttf|woff|woff2)(\?.*)?$") {
 		if (req.url ~ "nocache") {
 			return(pass);
 		}
 		set req.url = regsub(req.url, "\?.*$", "");
 		unset req.http.Cookie;
-		set req.grace = 2m;
-		return(lookup);
+		return(hash);
 	}
 }
 
-sub vcl_fetch {
-	if (req.request ~ "^(GET|HEAD)$" && req.url ~ "\.(jpg|jpeg|gif|png|ico|css|zip|tgz|gz|rar|bz2|pdf|txt|tar|wav|bmp|rtf|js|flv|swf|html|htm)$") {
+sub vcl_backend_response {
+	if (bereq.method ~ "^(GET|HEAD)$" && bereq.url ~ "\.(jpg|jpeg|gif|png|ico|css|zip|tgz|gz|rar|bz2|pdf|txt|tar|wav|bmp|rtf|js|flv|swf|html|htm|eot|svg|ttf|woff|woff2)$") {
 		unset beresp.http.set-cookie;
 		set beresp.ttl = 24h;
 		set beresp.grace = 2m;

@@ -18,9 +18,10 @@
 # You must have "import std;" in your main vcl:
 # import std;
 
-sub vcl_fetch {
+sub vcl_backend_response {
 	# Bypass cache for files > 10 MB
 	if (std.integer(beresp.http.Content-Length, 0) > 10485760) {
-		return (hit_for_pass);
+		set beresp.uncacheable = true;
+		return (deliver);
 	}
 }

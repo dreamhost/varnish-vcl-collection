@@ -1,3 +1,5 @@
+vcl 4.0;
+
 backend default {
 	.host = "127.0.0.1";
 	.port = "8080";
@@ -5,7 +7,7 @@ backend default {
 
 import std;
 
-include "lib/xforward.vcl";
+#include "lib/xforward.vcl"; # Varnish 4.0: X-Forwarded-For is now set before vcl_recv
 include "lib/cloudflare.vcl";
 include "lib/purge.vcl";
 include "lib/bigfiles.vcl";        # Varnish 3.0.3+
@@ -32,13 +34,13 @@ acl purge {
 # http://ocaoimh.ie/2011/08/09/speed-up-wordpress-with-apache-and-varnish/
 sub vcl_recv {
 	# pipe on weird http methods
-	if (req.request !~ "^GET|HEAD|PUT|POST|TRACE|OPTIONS|DELETE$") {
+	if (req.method !~ "^GET|HEAD|PUT|POST|TRACE|OPTIONS|DELETE$") {
 		return(pipe);
 	}
 
 	### Check for reasons to bypass the cache!
 	# never cache anything except GET/HEAD
-	if (req.request != "GET" && req.request != "HEAD") {
+	if (req.method != "GET" && req.method != "HEAD") {
 		return(pass);
 	}
 	# don't cache logged-in users or authors
@@ -56,17 +58,18 @@ sub vcl_recv {
 
 	### looks like we might actually cache it!
 	# fix up the request
-	set req.grace = 2m;
 	set req.url = regsub(req.url, "\?replytocom=.*$", "");
 
 	# Remove has_js, Google Analytics __*, and wooTracker cookies.
 	set req.http.Cookie = regsuball(req.http.Cookie, "(^|;\s*)(__[a-z]+|has_js|wooTracker)=[^;]*", "");
 	set req.http.Cookie = regsub(req.http.Cookie, "^;\s*", "");
+
+	# Remove empty/whitespace cookies
 	if (req.http.Cookie ~ "^\s*$") {
 		unset req.http.Cookie;
 	}
 
-	return(lookup);
+	return(hash);
 }
 
 sub vcl_hash {
@@ -76,7 +79,7 @@ sub vcl_hash {
 	}
 }
 
-sub vcl_fetch {
+sub vcl_backend_response {
 	# make sure grace is at least 2 minutes
 	if (beresp.grace < 2m) {
 		set beresp.grace = 2m;
@@ -90,17 +93,20 @@ sub vcl_fetch {
 	# Varnish determined the object was not cacheable
 	if (beresp.ttl <= 0s) {
 		set beresp.http.X-Cacheable = "NO:Not Cacheable";
-		return(hit_for_pass);
+		set beresp.uncacheable = true;
+		return (deliver);
 
 	# You don't wish to cache content for logged in users
-	} else if (req.http.Cookie ~ "wp-postpass_|wordpress_logged_in_|comment_author|PHPSESSID") {
+	} else if (bereq.http.Cookie ~ "wp-postpass_|wordpress_logged_in_|comment_author|PHPSESSID") {
 		set beresp.http.X-Cacheable = "NO:Got Session";
-		return(hit_for_pass);
+		set beresp.uncacheable = true;
+		return (deliver);
 
 	# You are respecting the Cache-Control=private header from the backend
 	} else if (beresp.http.Cache-Control ~ "private") {
 		set beresp.http.X-Cacheable = "NO:Cache-Control=private";
-		return(hit_for_pass);
+		set beresp.uncacheable = true;
+		return (deliver);
 
 	# You are extending the lifetime of the object artificially
 	} else if (beresp.ttl < 300s) {

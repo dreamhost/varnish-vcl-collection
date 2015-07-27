@@ -51,9 +51,9 @@ sub purge_page {
 # always set the X-Purge-Method header.
 
 sub vcl_recv {
-	if (req.request == "PURGE") {
+	if (req.method == "PURGE") {
 		if (client.ip !~ purge) {
-			error 405 "Not allowed.";
+			return(synth(405, "Not allowed."));
 		}
 
 		if (req.http.X-Purge-Method) {
@@ -76,14 +76,14 @@ sub vcl_recv {
 			}
 		}
 
-		error 200 "Purged.";
+		return(synth(200, "Purged."));
 	}
 }
 
-sub vcl_fetch {
-	set beresp.http.X-Req-Host = req.http.host;
-	set beresp.http.X-Req-URL = req.url;
-	set beresp.http.X-Req-URL-Base = regsub(req.url, "\?.*$", "");
+sub vcl_backend_response {
+	set beresp.http.X-Req-Host = bereq.http.host;
+	set beresp.http.X-Req-URL = bereq.url;
+	set beresp.http.X-Req-URL-Base = regsub(bereq.url, "\?.*$", "");
 }
 
 sub vcl_deliver {
