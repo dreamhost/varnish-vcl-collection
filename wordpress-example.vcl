@@ -34,13 +34,13 @@ acl purge {
 # http://ocaoimh.ie/2011/08/09/speed-up-wordpress-with-apache-and-varnish/
 sub vcl_recv {
 	# pipe on weird http methods
-	if (req.request !~ "^GET|HEAD|PUT|POST|TRACE|OPTIONS|DELETE$") {
+	if (req.method !~ "^GET|HEAD|PUT|POST|TRACE|OPTIONS|DELETE$") {
 		return(pipe);
 	}
 
 	### Check for reasons to bypass the cache!
 	# never cache anything except GET/HEAD
-	if (req.request != "GET" && req.request != "HEAD") {
+	if (req.method != "GET" && req.method != "HEAD") {
 		return(pass);
 	}
 	# don't cache logged-in users or authors
