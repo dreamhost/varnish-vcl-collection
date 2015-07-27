@@ -78,7 +78,7 @@ sub vcl_hash {
 	}
 }
 
-sub vcl_fetch {
+sub vcl_backend_response {
 	# make sure grace is at least 2 minutes
 	if (beresp.grace < 2m) {
 		set beresp.grace = 2m;
