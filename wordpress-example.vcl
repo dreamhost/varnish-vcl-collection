@@ -95,7 +95,7 @@ sub vcl_backend_response {
 		return(hit_for_pass);
 
 	# You don't wish to cache content for logged in users
-	} else if (req.http.Cookie ~ "wp-postpass_|wordpress_logged_in_|comment_author|PHPSESSID") {
+	} else if (bereq.http.Cookie ~ "wp-postpass_|wordpress_logged_in_|comment_author|PHPSESSID") {
 		set beresp.http.X-Cacheable = "NO:Got Session";
 		return(hit_for_pass);
 

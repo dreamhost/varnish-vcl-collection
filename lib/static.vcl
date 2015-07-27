@@ -27,8 +27,8 @@ sub vcl_recv {
 	}
 }
 
-	if (req.request ~ "^(GET|HEAD)$" && req.url ~ "\.(jpg|jpeg|gif|png|ico|css|zip|tgz|gz|rar|bz2|pdf|txt|tar|wav|bmp|rtf|js|flv|swf|html|htm)$") {
 sub vcl_backend_response {
+	if (bereq.method ~ "^(GET|HEAD)$" && bereq.url ~ "\.(jpg|jpeg|gif|png|ico|css|zip|tgz|gz|rar|bz2|pdf|txt|tar|wav|bmp|rtf|js|flv|swf|html|htm)$") {
 		unset beresp.http.set-cookie;
 		set beresp.ttl = 24h;
 		set beresp.grace = 2m;
