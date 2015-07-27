@@ -22,7 +22,6 @@ sub vcl_recv {
 		}
 		set req.url = regsub(req.url, "\?.*$", "");
 		unset req.http.Cookie;
-		set req.grace = 2m;
 		return(hash);
 	}
 }
