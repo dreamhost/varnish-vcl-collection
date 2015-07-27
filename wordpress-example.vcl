@@ -7,7 +7,7 @@ backend default {
 
 import std;
 
-include "lib/xforward.vcl";
+#include "lib/xforward.vcl"; # Varnish 4.0: X-Forwarded-For is now set before vcl_recv
 include "lib/cloudflare.vcl";
 include "lib/purge.vcl";
 include "lib/bigfiles.vcl";        # Varnish 3.0.3+
